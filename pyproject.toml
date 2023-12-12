@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "boardgame-bot"
+version = "0.1.0"
+description = ""
+authors = ["g-bolmida <gbolmida@georgebolmida.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+discord-py = "^2.3.2"
+sqlalchemy = "^2.0.23"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
