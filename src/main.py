@@ -11,7 +11,7 @@ import os.path
 import importgames
 
 load_dotenv()
-token = os.environ["TOKEN"]
+token = os.environ["BOT_TOKEN"]
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -23,6 +23,7 @@ async def on_ready():
     print(f'We have logged in as {bot.user}')
     await bot.tree.sync()
 
+# DMs the user the help message
 @bot.command()
 async def bghelp(ctx):
     # delete command call
@@ -36,10 +37,15 @@ async def bghelp(ctx):
     try:
         await ctx.author.send('''
         - `/addgames`: Add games to the database, this option will only accept csv files, more specifically exported from boardgamegeek.com. Go ahead and add all your owned games to your BGG collection and export them as a csv file. Then upload the file to discord with the `/addgames` command to add them to the database.
+                              
+        - `/collection`: Print out the games you own to the channel.
+
+        - `/schedule`: Start an RSVP poll, when it is complete it will generate a list of games compatible with the number of players and only list games owned by the players RSVPing.                              
         ''', files=files)
     except discord.Forbidden:
         await ctx.send("I can't send you a private message. Check your DM settings.")
 
+# allows users to upload csv files to add games to the database
 @bot.tree.command(name="addgames", description="Add games to the database")
 async def addgames(interaction: discord.Interaction, bgg_csv: discord.Attachment):
     # check first if the attachment is a csv file
@@ -47,11 +53,12 @@ async def addgames(interaction: discord.Interaction, bgg_csv: discord.Attachment
         await interaction.response.send_message(f'Error: {bgg_csv.filename} is not a csv file')
         return
     else:
-        filename = os.path.join('./tmp', interaction.user.name + "_" + time.strftime("%H-%M-%S") + "_" + bgg_csv.filename)
+        filename = os.path.join('/tmp/', interaction.user.name + "_" + time.strftime("%H-%M-%S") + "_" + bgg_csv.filename)
         await bgg_csv.save(filename)
         importgames.add_games_db(interaction.user.name, filename)
-        await interaction.response.send_message(f'Updated your games to the database')
+        await interaction.response.send_message(f'{interaction.user.name} added games to the database')
 
+# prints out the user's collection
 @bot.tree.command(name="collection", description="Show your collection")
 async def collection(interaction: discord.Interaction):
     # create db session
@@ -71,6 +78,7 @@ async def collection(interaction: discord.Interaction):
     else:
         await interaction.response.send_message(f"User '{interaction.user.name}' not found.")
 
+# schedule an event and trigger a vote on games
 @bot.tree.command(name="schedule", description="Schedule an event")
 async def schedule(interaction: discord.Interaction, event_datetime: str, location: str):
     try:
@@ -106,23 +114,22 @@ async def schedule(interaction: discord.Interaction, event_datetime: str, locati
         # List of emojis for reactions
         emojis = [
         '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', 
-        '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '☺️', '😚', 
-        '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', 
-        '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', 
-        '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', 
-        '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', 
-        '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', 
-        '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', 
-        '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', 
-        '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', 
-        '🤖', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', 
-        '🙈', '🙉', '🙊', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣',
-        '💬', '🗨️', '🗯️', '💭', '💤', '👋', '🤚', '🖐️', '✋',
-        '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
-        '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜',
-        '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪',
-        '🦾', '🦵', '🦿', '🦶', '👣', '👂', '🦻', '👃', '🧠', '🦷',
-        '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '👶', '👧', '🧒',]
+        '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
+        '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+        '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+        '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮',
+        '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓',
+        '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦',
+        '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞',
+        '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿',
+        '💀', '☠️', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖', '😺',
+        '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🙈', '🙉',
+        '🙊', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '🗨️',
+        '🗯️', '💭', '💤', '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤏',
+        '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
+        '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐',
+        '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦵', '🦿',
+        '🦶', '👣', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️',]
 
         chosen_reactors = []
 
@@ -133,7 +140,10 @@ async def schedule(interaction: discord.Interaction, event_datetime: str, locati
         if matching_games:
             games_message = "Vote on the games you would like to play:\n"
             for game in matching_games:
-                games_message += f"- {game.name} - <{game.bgg_url}> {chosen_reactors[matching_games.index(game)]}\n"
+                owners_names = [owner.name for owner in game.owners]
+                owners_str = ', '.join(owners_names)
+                
+                games_message += f"- {game.name} - [Owners: {owners_str}] - <{game.bgg_url}> {chosen_reactors[matching_games.index(game)]}\n"
         else:
             games_message = "No games found suitable for the number of players."
 

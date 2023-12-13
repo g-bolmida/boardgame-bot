@@ -1,0 +1,12 @@
+version: "3"
+services:
+  boardgame-bot:
+    image: ghcr.io/g-bolmida/boardgame-bot/boardgame-bot:latest
+    pull_policy: always
+    container_name: boardgame-bot
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BOT_TOKEN=xxx
+    volumes:
+      - ./config:/config
+    restart: always

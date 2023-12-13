@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:///boardgames.db"
+DATABASE_URL = "sqlite:////config/boardgames.db"
 engine = create_engine(DATABASE_URL)
 
 Base = declarative_base()
