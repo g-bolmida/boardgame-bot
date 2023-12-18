@@ -60,23 +60,28 @@ async def addgames(interaction: discord.Interaction, bgg_csv: discord.Attachment
 
 # prints out the user's collection
 @bot.tree.command(name="collection", description="Show your collection")
-async def collection(interaction: discord.Interaction):
+async def collection(interaction: discord.Interaction, name=''):
     # create db session
     Session = db.sessionmaker(bind=db.engine)
     session = Session()
+    
+    if name != '':
+        target_user = session.query(db.User).filter(db.User.name == name).first()
+    else:
+        target_user = session.query(db.User).filter(db.User.name == interaction.user.name).first()
+    
     # query the user's collection
-    user = session.query(db.User).filter(db.User.name == interaction.user.name).first()
-    if user:
-        games = user.games
+    if target_user:
+        games = target_user.games
         if games:
-            msg = f"{interaction.user.name}'s games:\n"
+            msg = f"{target_user.name}'s games:\n"
             for game in games:
                 msg += f"- {game.name} [Players: {game.min_players} - {game.max_players}]\n"
             await interaction.response.send_message(msg)
         else:
-            await interaction.response.send_message(f"{interaction.user.name} does not own any games.")
+            await interaction.response.send_message(f"{target_user.name} does not own any games.")
     else:
-        await interaction.response.send_message(f"User '{interaction.user.name}' not found.")
+        await interaction.response.send_message(f"User '{target_user.name}' not found.")
 
 # schedule an event and trigger a vote on games
 @bot.tree.command(name="schedule", description="Schedule an event")
