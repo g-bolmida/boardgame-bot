@@ -8,6 +8,7 @@ import asyncio
 import db
 import time
 import os.path
+from typing import Optional
 import importgames
 
 load_dotenv()
@@ -60,16 +61,15 @@ async def addgames(interaction: discord.Interaction, bgg_csv: discord.Attachment
 
 # prints out the user's collection
 @bot.tree.command(name="collection", description="Show your collection")
-async def collection(interaction: discord.Interaction, name=''):
+async def collection(interaction: discord.Interaction, name: Optional[str] = None):
     # create db session
     Session = db.sessionmaker(bind=db.engine)
     session = Session()
     
-    if name != '':
-        target_user = session.query(db.User).filter(db.User.name == name).first()
-    else:
-        target_user = session.query(db.User).filter(db.User.name == interaction.user.name).first()
-    
+    name = name or interaction.user.name
+
+    target_user = session.query(db.User).filter(db.User.name == name).first()
+
     # query the user's collection
     if target_user:
         games = target_user.games
