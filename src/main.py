@@ -88,15 +88,19 @@ async def collection(interaction: discord.Interaction, name: Optional[str] = Non
 async def schedule(interaction: discord.Interaction, event_datetime: str, location: str):
     try:
         event_date_obj = datetime.datetime.strptime(event_datetime, "%Y-%m-%d %H:%M")
-        await interaction.response.send_message(f"@everyone RSVP for Boardgames & Beer on {event_date_obj.strftime('%Y-%m-%d at %H:%M')} @ {location}")
+
+        # Calculate the time 8 hours before the event
+        hours_before_event = event_date_obj - datetime.timedelta(hours=8)
+
+        # Poll closing time string
+        hours_before_event_str = hours_before_event.strftime('%Y-%m-%d at %H:%M')
+
+        await interaction.response.send_message(f"@everyone RSVP for Boardgames & Beer on {event_date_obj.strftime('%Y-%m-%d at %H:%M')} @ {location}. Note: RSVP closes at {hours_before_event_str}")
         message = await interaction.original_response()
         
         await message.pin()
         await message.add_reaction('✅')
         await message.add_reaction('❌')
-
-        # Calculate the time 8 hours before the event
-        hours_before_event = event_date_obj - datetime.timedelta(hours=8)
 
         # Get the current time
         current_time = datetime.datetime.now()
