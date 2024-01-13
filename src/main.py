@@ -95,7 +95,18 @@ async def schedule(interaction: discord.Interaction, event_datetime: str, locati
         await message.add_reaction('✅')
         await message.add_reaction('❌')
 
-        await asyncio.sleep(10)
+        # Calculate the time 8 hours before the event
+        hours_before_event = event_date_obj - datetime.timedelta(hours=8)
+
+        # Get the current time
+        current_time = datetime.datetime.now()
+
+        # Calculate the time difference in seconds
+        time_diff = (hours_before_event - current_time).total_seconds()
+
+        # Wait until 8 hours before the event if the time is in the future
+        if time_diff > 0:
+            await asyncio.sleep(time_diff)
 
         # Fetch the updated message to get the reactions
         channel = interaction.channel
